@@ -1,0 +1,6 @@
+Edit only the bib and tex files.
+
+To typeset:
+(1) pdflatex the tex file.
+(2) bibtex the bib file.
+(3) pdflatex the tex file 3 times.

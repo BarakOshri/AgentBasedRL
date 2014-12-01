@@ -1,0 +1,47 @@
+\begin{thebibliography}{BNCM14}
+
+\bibitem[AN01]{arrieros}
+Klaus Auer and Tim Norris.
+\newblock ``{A}rrieros{A}life" a multi-agent approach simulating the evolution
+  of a social system: Modeling the emergence of social networks with
+  ``{A}scape".
+\newblock {\em J. Artificial Societies and Social Simulation}, 4(1), 2001.
+\newblock \url{http://jasss.soc.surrey.ac.uk/4/1/6.html}.
+
+\bibitem[BNCM14]{DenseSense}
+Andrew Best, Sahil Narang, Sean Curtis, and Dinesh Manocha.
+\newblock {D}ense{S}ense: Interactive crowd simulation using density-dependent
+  filters.
+\newblock {\em The Eurographics / {ACM} {SIGGRAPH} Symposium on Computer
+  Animation, {SCA} '14, Copenhagen, Denmark, 2014.}, pages 97--102, 2014.
+\newblock \url{http://dx.doi.org/10.2312/sca.20141127}.
+
+\bibitem[MMM13]{modeling_natural_disaster}
+Karam Mustapha, Hamid Mcheick, and Sehl Mellouli.
+\newblock Modeling and simulation agent-based of natural disaster complex
+  systems.
+\newblock {\em Procedia Computer Science}, 21(0):148--155, 2013.
+\newblock
+  \url{http://www.sciencedirect.com/science/article/pii/S1877050913008144}.
+
+\bibitem[Tan93]{independent_cooperative}
+Ming Tan.
+\newblock Multi-agent reinforcement learning: Independent vs. cooperative
+  agents.
+\newblock {\em Proceedings of the Tenth International Conference on Machine
+  Learning}, pages 330--337, 1993.
+
+\bibitem[Ter98]{SWARM}
+Pietro Terna.
+\newblock Simulation tools for social scientists: Building agent based models
+  with {SWARM}.
+\newblock {\em Journal of Artificial Societies and Social Simulation}, 1(2),
+  1998.
+\newblock \url{http://EconPapers.repec.org/RePEc:jas:jasssj:1998-4-1}.
+
+\bibitem[Wik14]{wiki:crowd}
+Wikipedia.
+\newblock Crowd simulation, 2014.
+\newblock \url{http://en.wikipedia.org/wiki/Crowd_simulation}.
+
+\end{thebibliography}
