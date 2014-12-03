@@ -19,7 +19,7 @@ Y_MAX = 2
 X_LENGTH = abs(X_MAX-X_MIN)
 Y_LENGTH = abs(Y_MAX-Y_MIN)
 bounds = [X_MIN, X_MAX, Y_MIN, Y_MAX]
-NUM_AGENTS = 4
+NUM_AGENTS = 10
 
 def inBounds(x, y):
     return (x < X_MAX and x > X_MIN and y < Y_MAX and y > Y_MIN)
@@ -28,51 +28,58 @@ class Agent():
 
     initialDiscount = 0.99
     discount = 0.99
-    eta = 0.01
-    radius = float(abs(X_MAX-X_MIN))/float(40)
+    eta = 0.05
+    radius = float(abs(X_MAX-X_MIN))/float(10)
 
     def __init__(self, ID, walkRadius = radius, x = 0, y = 0, utility = 0):
         self.r = walkRadius
         self.x = x
         self.y = y
         self.ID = ID
-        self.utility = utility # Previously recorded utility. Note! Utility doesn't account for the discount factor
-        self.score = 0 # Sum of utilities over all times
+        self.utility = utility
+        self.score = 0
         self.w = np.zeros((1, Agent.lenWeight))
-        self.V = -1
 
     lenWeight = NUM_AGENTS-1
     def featureExtractor(self, x, y):
         #return np.array([x, y])
-        return np.array([euclideanDistance(x, y, agents[i].x, agents[i].y) for i in range(NUM_AGENTS) if i != self.ID])
+        return np.array([float(euclideanDistance(x, y, agents[i].x, agents[i].y)) for i in range(NUM_AGENTS) if i != self.ID])
 
     def minf(self, x):
-        #print "Position: ", x
-        #print "Minf: ", -self.getPrediction(x[0], x[1]) if euclideanDistance(self.x, self.y, x[0], x[1]) < self.r and inBounds(x[0], x[1]) else 0
         return -self.prediction(x[0], x[1])
-        return -self.prediction(x[0], x[1]) if (euclideanDistance(self.x, self.y, x[0], x[1]) < self.r and inBounds(x[0], x[1])) else 20
 
-    def updatePosition(self):
-        #prevX = self.x
-        #prevY = self.y
+    def bestPredicted(self):
         limits = [(X_MIN, X_MAX), (Y_MIN, Y_MAX)]
         minimum = fmin_l_bfgs_b(self.minf, x0=np.array([self.x, self.y]), approx_grad=True, bounds=limits)
-        self.x = minimum[0][0]
-        self.y = minimum[0][1]
-        stddev = float(2)*Agent.discount
-        self.x = random.gauss(self.x, stddev)
-        self.y = random.gauss(self.y, stddev)
-        while self.x < X_MIN or self.x > X_MAX:
-            self.x = random.gauss(self.x, stddev)
-        while self.y < Y_MIN or self.y > Y_MAX:
-            self.y = random.gauss(self.y, stddev)
+        x = minimum[0][0]
+        y = minimum[0][1]
+        return [x, y]
 
-        #[self.x, self.y] = fmin(self.minf, [self.x, self.y], disp=False)
+    def explore(self, x, y):
+        stddev = float(X_LENGTH/4)*Agent.discount
+        x = random.gauss(x, stddev)
+        y = random.gauss(y, stddev)
+        while x < X_MIN or x > X_MAX:
+            x = random.gauss(x, stddev)
+        while y < Y_MIN or y > Y_MAX:
+            y = random.gauss(y, stddev)
+        return [x, y]
 
-        #stddev = float(X_LENGTH*Agent.discount)/float(10)
-        #[self.x, self.y] = [random.gauss(self.x, stddev), random.gauss(self.y, stddev)]
-        #print "Prediction: ", self.getPrediction(self.x, self.y)
-        #print "Same Locale: ", [self.x, self.y] == [prevX, prevY]
+    def normalize(self, x, y):
+        distance = euclideanDistance(self.x, self.y, x, y)
+        if distance > self.r:
+            angle = np.angle([complex(x-self.x, y-self.y)])
+            x = self.r * math.cos(angle) + self.x
+            y = self.r * math.sin(angle) + self.y
+        return [x, y]
+
+    def updatePosition(self):
+        [x, y] = self.bestPredicted()
+        [x, y] = self.explore(x, y)
+        [x, y] = self.normalize(x, y)
+
+        self.x = x
+        self.y = y
 
     def prediction(self, x, y):
         featureVector = self.featureExtractor(x, y)
@@ -84,15 +91,14 @@ class Agent():
         self.updateWeights()
 
     def updateWeights(self):
-        #self.w = np.matrix([1, 1, 1, 1])
+        #self.w = np.matrix([1, 1, 1, 1, 1])
         self.w = self.w - Agent.eta*(self.prediction(self.x, self.y) - self.utility)*self.featureExtractor(self.x, self.y)
         print self.w
-        #print newW-oldW, self.prediction(self.x, self.y), self.utility, self.prediction(self.x, self.y)-self.utility
 
-# Given the position of all agents, returns the utility score for a given agent
 def utilityF(agents, agent):
     #return agent.x + agent.y
-    return reduce(lambda x, y: x+y, [float(1)/float(euclideanDistance(agent.x, agent.y, neighbor.x, neighbor.y)) for neighbor in agents if neighbor != agent])
+    return reduce(lambda x, y: x + y, [math.log(float(euclideanDistance(agent.x, agent.y, neighbor.x, neighbor.y))) for neighbor in agents if neighbor != agent])
+    #return -euclideanDistance(agent.x, agent.y, 0, 0)
 
 def initializeRandomAgents(numberAgents):
     agents = list()
@@ -103,7 +109,7 @@ def initializeRandomAgents(numberAgents):
 
 def update(agents):
     for agent in agents:
-        agent.updatePosition() #[(agent.x, agent.y) for agent in agents]
+        agent.updatePosition()
     for agent in agents:
         agent.recordUtility(utilityF(agents, agent))
 
@@ -134,14 +140,13 @@ def animate(i):
     ms = int(fig.dpi * 2 * 0.04 * fig.get_figwidth()
              / np.diff(ax.get_xbound())[0])
 
-    # update pieces of the animation
     rect.set_edgecolor('k')
     particles.set_data([agent.x for agent in agents], [agent.y for agent in agents])
     particles.set_markersize(ms)
     return particles, rect
 
 ani = animation.FuncAnimation(fig, animate, frames=600,
-                              interval=10, blit=False, init_func=init)
+                              interval=300, blit=False, init_func=init)
 
 
 # save the animation as an mp4.  This requires ffmpeg or mencoder to be
